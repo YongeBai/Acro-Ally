@@ -8,6 +8,8 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
+	"github.com/robotn/gohook"
+	"github.com/atotto/clipboard"
 )
 
 var dict Dictionary
@@ -50,7 +52,26 @@ func main() {
 
 	myWindow.SetContent(content)
 	myWindow.Resize(fyne.NewSize(600, 400))
+
+	go setupGlobalHotkeys(myWindow, tree, dict)
+	
 	myWindow.ShowAndRun()
+}
+
+func setupGlobalHotkeys(win fyne.Window, tree *widget.Tree, dict Dictionary) {
+	hook.Register(hook.KeyDown, []string{"ctrl", "alt", "a"}, func(e hook.Event) {
+		text, err := clipboard.ReadAll()
+		if err != nil {
+			dialog.ShowError(err, win)
+			return
+		}
+		if text != "" {
+			lookUpOrDefine(win, tree, dict, text)
+		}
+	})
+
+	s := hook.Start()
+	<-hook.Process(s)
 }
 
 func lookUpOrDefine(win fyne.Window, tree *widget.Tree, dict Dictionary, acronym string) {
