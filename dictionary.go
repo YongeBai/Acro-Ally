@@ -54,7 +54,7 @@ func addAcronym(win fyne.Window, tree *widget.Tree, dict Dictionary, acronym str
 	definitionEntry := widget.NewEntry()
 	definitionEntry.SetPlaceHolder("Enter the definition")
 
-	dialog.ShowForm(fmt.Sprintf("Add Acronym %s", acronym), "Add", "Cancel", []*widget.FormItem{		
+	dialog.ShowForm(fmt.Sprintf("Add Acronym: %s", acronym), "Add", "Cancel", []*widget.FormItem{		
 		widget.NewFormItem("Expanded", expandEntry),
 		widget.NewFormItem("Definition", definitionEntry),
 	}, func(add bool) {
@@ -87,7 +87,7 @@ func addAcronymButton(win fyne.Window, tree *widget.Tree, dict Dictionary) {
 	definitionEntry := widget.NewEntry()
 	definitionEntry.SetPlaceHolder("Enter the definition")
 
-	dialog.ShowForm(fmt.Sprintf("Add Acronym %s", acronymEntry.Text), "Add", "Cancel", []*widget.FormItem{
+	dialog.ShowForm(fmt.Sprintf("Add New Acronym %s", acronymEntry.Text), "Add", "Cancel", []*widget.FormItem{
 		widget.NewFormItem("Acronym", acronymEntry),
 		widget.NewFormItem("Expanded", expandEntry),
 		widget.NewFormItem("Definition", definitionEntry),

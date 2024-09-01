@@ -2,3 +2,6 @@
 1. Make main dict tree to store multiple def per acro (done)
 2. figure out how u want the search up to look (done ish)
 3. get lookup and defining working with shortcut
+
+add styling (bold expanded etc)
+current look up is ugly, I also want to be able to hit Enter to add not have to click the damn add button
