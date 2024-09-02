@@ -10,5 +10,7 @@ current look up is ugly, I also want to be able to hit Enter to add not have to 
 
 FUCKKKKKKK this popup thing seems to be difficult, since u can move a window and popups and popup menus are bound to a window, maybe I can just create windows and do window.Show() but I also have to figure out how to move them fuck. ok well seems
 
+I also have an issue with the double window opening to define. I think i can just add a sleep after one hit to prevent double dips
+
 09/02
 get popup window above mouse position to lookup and define

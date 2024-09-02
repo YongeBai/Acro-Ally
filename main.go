@@ -112,14 +112,24 @@ func addAcronym(win fyne.Window, tree *widget.Tree, dict Dictionary, acronym str
 }
 
 func simulateCopy() {
-	robotgo.KeyTap("c", "Control")
-	time.Sleep(50 * time.Millisecond)
+	robotgo.KeySleep = 200
+	robotgo.KeyToggle("control", "down")
+	robotgo.KeyTap("c")
+	robotgo.KeyToggle("control", "up")
 }
 
 func setupGlobalHotkeys(win fyne.Window, tree *widget.Tree, dict Dictionary) {
-	hook.Register(hook.KeyDown, []string{"ctrl", "alt", "a"}, func(e hook.Event) {
+	var lastPressed time.Time
+	debounce := 300 * time.Millisecond
+	hook.Register(hook.KeyDown, []string{"ctrl", "alt", "d"}, func(e hook.Event) {
+		if time.Since(lastPressed) < debounce {
+			return
+		}
+		lastPressed = time.Now()
+		
 		simulateCopy()		
 		text, err := clipboard.ReadAll()
+		fmt.Println("Text:", text)
 		if err != nil {
 			dialog.ShowError(err, win)
 			return
