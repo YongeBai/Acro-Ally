@@ -27,7 +27,7 @@ func main() {
 	fmt.Println(dict)
 	
 	myApp := app.New()
-	mainWindow := myApp.NewWindow("Acro-Ally")
+	mainWindow := myApp.NewWindow("Acro-Ally")	
 	mainWindow.SetMaster()
 
 	tree := createAcronymTree(dict)
@@ -35,7 +35,7 @@ func main() {
 	searchEntry := widget.NewEntry()
 	searchEntry.SetPlaceHolder("Search for an acronym")
 	searchEntry.OnSubmitted = func(text string) {
-		lookUpOrDefine(mainWindow, tree, dict, text)
+		lookUpOrDefineSearch(mainWindow, tree, dict, text)
 	}
 
 
@@ -63,10 +63,10 @@ func main() {
 }
 
 // These are for when the user is in main window, its fine for now
-func lookUpOrDefine(win fyne.Window, tree *widget.Tree, dict Dictionary, acronym string) {
+func lookUpOrDefineSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, acronym string) {
 	fmt.Println("Looking up or defining:", acronym)
 	if _, ok := dict[acronym]; !ok {
-		addAcronym(win, tree, dict, acronym)
+		addAcronymSearch(win, tree, dict, acronym)
 	} else {
 		var definitions string
 		for _, acro := range dict[acronym] {
@@ -80,7 +80,7 @@ func lookUpOrDefine(win fyne.Window, tree *widget.Tree, dict Dictionary, acronym
 	}
 }
 
-func addAcronym(win fyne.Window, tree *widget.Tree, dict Dictionary, acronym string) {
+func addAcronymSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, acronym string) {
 
 	expandEntry := widget.NewEntry()
 	expandEntry.SetPlaceHolder("Enter the expanded form")
@@ -131,7 +131,7 @@ func setupGlobalHotkeys(win fyne.Window, tree *widget.Tree, dict Dictionary) {
 			return
 		}
 		if text != "" {
-			lookUpOrDefine(win, tree, dict, text)
+			showPopup(dict, text)
 		}
 	})
 
