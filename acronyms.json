@@ -14,5 +14,17 @@
       "expanded": "LARGE LING",
       "definition": "LAKHdkjashfkjh"
     }
+  ],
+  "theme": [
+    {
+      "expanded": "Thene",
+      "definition": "Theme"
+    }
+  ],
+  "widget": [
+    {
+      "expanded": "wid",
+      "definition": "widget is widge"
+    }
   ]
 }

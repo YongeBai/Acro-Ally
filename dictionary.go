@@ -46,37 +46,6 @@ func createAcronymTree(dict Dictionary) *widget.Tree {
 	return tree
 }
 
-func addAcronym(win fyne.Window, tree *widget.Tree, dict Dictionary, acronym string) {
-
-	expandEntry := widget.NewEntry()
-	expandEntry.SetPlaceHolder("Enter the expanded form")
-
-	definitionEntry := widget.NewEntry()
-	definitionEntry.SetPlaceHolder("Enter the definition")
-
-	dialog.ShowForm(fmt.Sprintf("Add Acronym: %s", acronym), "Add", "Cancel", []*widget.FormItem{		
-		widget.NewFormItem("Expanded", expandEntry),
-		widget.NewFormItem("Definition", definitionEntry),
-	}, func(add bool) {
-		if add && expandEntry.Text != "" && definitionEntry.Text != "" {
-			newAcronym := Acronym{
-				Expanded:   expandEntry.Text,
-				Definition: definitionEntry.Text,
-			}
-			if _, ok := dict[acronym]; !ok {
-				dict[acronym] = []Acronym{}
-			}
-			dict[acronym] = append(dict[acronym], newAcronym)
-			tree.Refresh()
-			fmt.Printf("Dictionary after adding: %+v\n", dict)
-			err := saveDictionary(dict, "acronyms.json")
-			if err != nil {
-				dialog.ShowError(err, win)
-			}
-		}
-	}, win)
-}
-
 func addAcronymButton(win fyne.Window, tree *widget.Tree, dict Dictionary) {
 	acronymEntry := widget.NewEntry()
 	acronymEntry.SetPlaceHolder("Enter the acronym")

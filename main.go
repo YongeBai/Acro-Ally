@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -9,11 +10,12 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 	"github.com/atotto/clipboard"
-	"github.com/robotn/gohook"
 	"github.com/go-vgo/robotgo"
+	"github.com/robotn/gohook"
 )
 
 var dict Dictionary
+
 
 func main() {
 	var err error
@@ -25,14 +27,15 @@ func main() {
 	fmt.Println(dict)
 	
 	myApp := app.New()
-	myWindow := myApp.NewWindow("Acro-Ally")
+	mainWindow := myApp.NewWindow("Acro-Ally")
+	mainWindow.SetMaster()
 
 	tree := createAcronymTree(dict)
 
 	searchEntry := widget.NewEntry()
 	searchEntry.SetPlaceHolder("Search for an acronym")
 	searchEntry.OnSubmitted = func(text string) {
-		lookUpOrDefine(myWindow, tree, dict, text)
+		lookUpOrDefine(mainWindow, tree, dict, text)
 	}
 
 
@@ -40,7 +43,7 @@ func main() {
 		container.NewVBox(
 			searchEntry,
 			widget.NewButton("Add Acronym", func() {
-				addAcronymButton(myWindow, tree, dict)
+				addAcronymButton(mainWindow, tree, dict)
 			}),
 		),
 		widget.NewButton("Exit", func() {
@@ -51,37 +54,17 @@ func main() {
 		container.NewVScroll(tree),
 	)
 
-	myWindow.SetContent(content)
-	myWindow.Resize(fyne.NewSize(600, 400))
+	mainWindow.SetContent(content)
+	mainWindow.Resize(fyne.NewSize(600, 400))
 
-	go setupGlobalHotkeys(myWindow, tree, dict)
+	go setupGlobalHotkeys(mainWindow, tree, dict)
 
-	myWindow.ShowAndRun()
+	mainWindow.ShowAndRun()
 }
 
-
-func simulateCopy() {
-	robotgo.KeyTap("c", "Control")
-}
-
-func setupGlobalHotkeys(win fyne.Window, tree *widget.Tree, dict Dictionary) {
-	hook.Register(hook.KeyDown, []string{"ctrl", "alt", "a"}, func(e hook.Event) {
-		simulateCopy()
-		text, err := clipboard.ReadAll()
-		if err != nil {
-			dialog.ShowError(err, win)
-			return
-		}
-		if text != "" {
-			lookUpOrDefine(win, tree, dict, text)
-		}
-	})
-
-	s := hook.Start()
-	<-hook.Process(s)
-}
-
+// These are for when the user is in main window, its fine for now
 func lookUpOrDefine(win fyne.Window, tree *widget.Tree, dict Dictionary, acronym string) {
+	fmt.Println("Looking up or defining:", acronym)
 	if _, ok := dict[acronym]; !ok {
 		addAcronym(win, tree, dict, acronym)
 	} else {
@@ -96,3 +79,57 @@ func lookUpOrDefine(win fyne.Window, tree *widget.Tree, dict Dictionary, acronym
 		)
 	}
 }
+
+func addAcronym(win fyne.Window, tree *widget.Tree, dict Dictionary, acronym string) {
+
+	expandEntry := widget.NewEntry()
+	expandEntry.SetPlaceHolder("Enter the expanded form")
+
+	definitionEntry := widget.NewEntry()
+	definitionEntry.SetPlaceHolder("Enter the definition")
+
+	dialog.ShowForm(fmt.Sprintf("Add Acronym: %s", acronym), "Add", "Cancel", []*widget.FormItem{		
+		widget.NewFormItem("Expanded", expandEntry),
+		widget.NewFormItem("Definition", definitionEntry),
+	}, func(add bool) {
+		if add && expandEntry.Text != "" && definitionEntry.Text != "" {
+			newAcronym := Acronym{
+				Expanded:   expandEntry.Text,
+				Definition: definitionEntry.Text,
+			}
+			if _, ok := dict[acronym]; !ok {
+				dict[acronym] = []Acronym{}
+			}
+			dict[acronym] = append(dict[acronym], newAcronym)
+			tree.Refresh()
+			fmt.Printf("Dictionary after adding: %+v\n", dict)
+			err := saveDictionary(dict, "acronyms.json")
+			if err != nil {
+				dialog.ShowError(err, win)
+			}
+		}
+	}, win)
+}
+
+func simulateCopy() {
+	robotgo.KeyTap("c", "Control")
+	time.Sleep(50 * time.Millisecond)
+}
+
+func setupGlobalHotkeys(win fyne.Window, tree *widget.Tree, dict Dictionary) {
+	hook.Register(hook.KeyDown, []string{"ctrl", "alt", "a"}, func(e hook.Event) {
+		simulateCopy()		
+		text, err := clipboard.ReadAll()
+		if err != nil {
+			dialog.ShowError(err, win)
+			return
+		}
+		if text != "" {
+			lookUpOrDefine(win, tree, dict, text)
+		}
+	})
+
+	s := hook.Start()
+	<-hook.Process(s)
+}
+

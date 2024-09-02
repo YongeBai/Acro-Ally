@@ -1,7 +1,14 @@
-0. create a test dict for when it is full (fill with ericsson)
-1. Make main dict tree to store multiple def per acro (done)
-2. figure out how u want the search up to look (done ish)
-3. get lookup and defining working with shortcut
+08/30
+create a test dict for when it is full (fill with ericsson)
+Make main dict tree to store multiple def per acro (done)
+figure out how u want the search up to look (done ish)
+get lookup and defining working with shortcut (done on main window)
 
+09/01
 add styling (bold expanded etc)
 current look up is ugly, I also want to be able to hit Enter to add not have to click the damn add button
+
+FUCKKKKKKK this popup thing seems to be difficult, since u can move a window and popups and popup menus are bound to a window, maybe I can just create windows and do window.Show() but I also have to figure out how to move them fuck. ok well seems
+
+09/02
+get popup window above mouse position to lookup and define
