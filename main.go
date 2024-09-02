@@ -15,6 +15,9 @@ import (
 )
 
 var dict Dictionary
+var lastPressedTime time.Time
+var debounceTime = 300 * time.Millisecond
+var tree *widget.Tree
 
 
 func main() {
@@ -30,7 +33,7 @@ func main() {
 	mainWindow := myApp.NewWindow("Acro-Ally")	
 	mainWindow.SetMaster()
 
-	tree := createAcronymTree(dict)
+	tree = createAcronymTree(dict)
 
 	searchEntry := widget.NewEntry()
 	searchEntry.SetPlaceHolder("Search for an acronym")
@@ -57,7 +60,7 @@ func main() {
 	mainWindow.SetContent(content)
 	mainWindow.Resize(fyne.NewSize(600, 400))
 
-	go setupGlobalHotkeys(mainWindow, tree, dict)
+	go setupGlobalHotkeys(mainWindow, dict)
 
 	mainWindow.ShowAndRun()
 }
@@ -113,26 +116,27 @@ func addAcronymSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, acron
 
 
 func simulateCopy() {
-	robotgo.KeyTap("c", "Control")	
+	robotgo.KeyTap("c", "Control")			
 }
 
-func setupGlobalHotkeys(win fyne.Window, tree *widget.Tree, dict Dictionary) {
-	var lastPressed time.Time
-	debounce := 300 * time.Millisecond
+func setupGlobalHotkeys(win fyne.Window, dict Dictionary) {	
 	hook.Register(hook.KeyDown, []string{"ctrl", "alt", "d"}, func(e hook.Event) {
-		if time.Since(lastPressed) < debounce {
-			return
+		simulateCopy()						
+		if time.Since(lastPressedTime) < debounceTime {
+			fmt.Println("Debounce")
+			return			
 		}
-		lastPressed = time.Now()
-		simulateCopy()		
+		lastPressedTime = time.Now()
+		
 		text, err := clipboard.ReadAll()
+		fmt.Println("Clipboard text:", text)
 		if err != nil {
 			dialog.ShowError(err, win)
 			return
 		}
 		if text != "" {
 			showPopup(dict, text)
-		}
+		}		
 	})
 
 	s := hook.Start()
