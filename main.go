@@ -8,8 +8,9 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
-	"github.com/robotn/gohook"
 	"github.com/atotto/clipboard"
+	"github.com/robotn/gohook"
+	"github.com/go-vgo/robotgo"
 )
 
 var dict Dictionary
@@ -54,12 +55,18 @@ func main() {
 	myWindow.Resize(fyne.NewSize(600, 400))
 
 	go setupGlobalHotkeys(myWindow, tree, dict)
-	
+
 	myWindow.ShowAndRun()
+}
+
+
+func simulateCopy() {
+	robotgo.KeyTap("c", "Control")
 }
 
 func setupGlobalHotkeys(win fyne.Window, tree *widget.Tree, dict Dictionary) {
 	hook.Register(hook.KeyDown, []string{"ctrl", "alt", "a"}, func(e hook.Event) {
+		simulateCopy()
 		text, err := clipboard.ReadAll()
 		if err != nil {
 			dialog.ShowError(err, win)
