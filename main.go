@@ -119,7 +119,7 @@ func simulateCopy() {
 func setupGlobalHotkeys(win fyne.Window, tree *widget.Tree, dict Dictionary) {
 	var lastPressed time.Time
 	debounce := 300 * time.Millisecond
-	hook.Register(hook.KeyDown, []string{"ctrl", "alt", "a"}, func(e hook.Event) {
+	hook.Register(hook.KeyDown, []string{"ctrl", "alt", "d"}, func(e hook.Event) {
 		if time.Since(lastPressed) < debounce {
 			return
 		}
