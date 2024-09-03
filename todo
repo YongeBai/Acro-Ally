@@ -15,7 +15,12 @@ I also have an issue with the double window opening to define. I think i can jus
 09/02
 get popup window above mouse position to lookup and define (https://github.com/fyne-io/fyne/blob/7d813563712924b381ced18c04869c059e2cb4c6/internal/driver/glfw/window_desktop.go), asked in discord how i can get it right above, idk just leave it for now, it shows up in the top left corner but at least its on the right monitor
 
+09/03
+everything except the fucking copy selection issue is done, tmrw get this done + package up the app
+
+
 Rolling to do:
 - add styling (bold expanded etc, use richtext mark down thing in fyne)
 - fix fucking debounce issue
 - make popup show up above mouse position
+
