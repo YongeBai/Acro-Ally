@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"fyne.io/fyne/v2"
-	// "fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 	"github.com/go-vgo/robotgo"
@@ -13,14 +12,7 @@ import (
 func createPopup(title string) fyne.Window {
 	popup := fyne.CurrentApp().NewWindow(title)
 	popup.Resize(fyne.NewSize(300, 200))
-
-	x, y := robotgo.Location()
-	// fmt.Printf("x:%d, y:%d\n", x, y)
-	// y += 1000
-	// fmt.Printf("x:%d, y:%d\n", x, y)
-
-	pos := fyne.NewPos(float32(x), float32(y))
-	popup.Canvas().Content().Move(pos)
+	popup.SetPadded(false)	
 	return popup
 }
 
@@ -32,13 +24,13 @@ func showPopup(dict Dictionary, acronym string) {
 		content = createDefinitionPopup(popup, dict, acronym)
 	} else {
 		popup = createPopup(fmt.Sprintf("Lookup: %s", acronym))
-		content = lookupPopup(popup, definitions, acronym)
+		content = createLookupPopup(popup, definitions, acronym)
 	}
 	popup.SetContent(content)
 	popup.Show()
 }
 
-func lookupPopup(popup fyne.Window, definitions []Acronym, acronym string) fyne.CanvasObject {
+func createLookupPopup(popup fyne.Window, definitions []Acronym, acronym string) fyne.CanvasObject {
 	var definitionsText string
 		for _, acro := range definitions {
 			definitionsText += fmt.Sprintf("%s: %s\n", acro.Expanded, acro.Definition)
@@ -50,6 +42,7 @@ func lookupPopup(popup fyne.Window, definitions []Acronym, acronym string) fyne.
 		widget.NewLabel(definitionsText),
 		okButton,
 	)
+	
 	return content 
 }
 
