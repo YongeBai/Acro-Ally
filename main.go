@@ -129,21 +129,26 @@ func addAcronymSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, acron
 }
 
 
-func simulateCopy() {
-	robotgo.KeyTap("c", "Control")			
+func simulateCopy() (string, error) {	
+	robotgo.KeyTap(robotgo.CmdCtrl(), "c")		
+	text, err := clipboard.ReadAll()
+	if err != nil {
+		fmt.Println("Error reading clipboard:", err)
+	}
+	fmt.Println("Clipboard text:", text)
+	return text, err	
 }
 
 func setupGlobalHotkeys(win fyne.Window, dict Dictionary) {	
-	hook.Register(hook.KeyDown, []string{"ctrl", "alt", "d"}, func(e hook.Event) {
-		simulateCopy()						
-		if time.Since(lastPressedTime) < debounceTime {
-			fmt.Println("Debounce")
+	hook.Register(hook.KeyDown, []string{"ctrl", "alt", "d"}, func(e hook.Event) {		
+		if time.Since(lastPressedTime) < debounceTime {						
 			return			
 		}
-		lastPressedTime = time.Now()
+		fmt.Println("Hotkey pressed")
 		
-		text, err := clipboard.ReadAll()
-		fmt.Println("Clipboard text:", text)
+		text, err := simulateCopy()
+		lastPressedTime = time.Now()
+
 		if err != nil {
 			dialog.ShowError(err, win)
 			return
