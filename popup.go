@@ -12,7 +12,7 @@ import (
 func createPopup(title string) fyne.Window {
 	popup := fyne.CurrentApp().NewWindow(title)
 	popup.Resize(fyne.NewSize(300, 200))
-	popup.SetPadded(false)	
+	popup.SetPadded(false)
 	return popup
 }
 
@@ -42,7 +42,10 @@ func createLookupPopup(popup fyne.Window, definitions []Acronym, acronym string)
 		widget.NewLabel(definitionsText),
 		okButton,
 	)
-	
+	x, y := robotgo.Location()
+	y -= 200
+	pos := fyne.NewPos(float32(x), float32(y))
+	content.Move(pos)
 	return content 
 }
 

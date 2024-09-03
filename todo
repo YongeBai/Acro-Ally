@@ -13,4 +13,9 @@ FUCKKKKKKK this popup thing seems to be difficult, since u can move a window and
 I also have an issue with the double window opening to define. I think i can just add a sleep after one hit to prevent double dips
 
 09/02
-get popup window above mouse position to lookup and define
+get popup window above mouse position to lookup and define (https://github.com/fyne-io/fyne/blob/7d813563712924b381ced18c04869c059e2cb4c6/internal/driver/glfw/window_desktop.go), asked in discord how i can get it right above, idk just leave it for now, it shows up in the top left corner but at least its on the right monitor
+
+Rolling to do:
+- add styling (bold expanded etc, use richtext mark down thing in fyne)
+- fix fucking debounce issue
+- make popup show up above mouse position
