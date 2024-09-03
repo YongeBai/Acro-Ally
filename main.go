@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
@@ -49,9 +50,22 @@ func main() {
 				addAcronymButton(mainWindow, tree, dict)
 			}),
 		),
-		widget.NewButton("Exit", func() {
-			myApp.Quit()
-		}),
+		container.NewVBox(
+			widget.NewButton("Exit", func() {
+				myApp.Quit()
+			}),
+        	layout.NewSpacer(),
+        	container.NewHBox(
+            	layout.NewSpacer(),
+				widget.NewButton("Import Acronyms", func() {
+					importDictionaryDialog(mainWindow, tree, &dict)
+				}),
+				widget.NewButton("Export Acronyms", func() {
+					exportDictionaryDialog(mainWindow, &dict)
+				}),				
+            layout.NewSpacer(),
+        ),
+		),
 		nil,
 		nil,
 		container.NewVScroll(tree),
