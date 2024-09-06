@@ -10,8 +10,7 @@ import (
 )
 
 func createPopup(title string) fyne.Window {
-	popup := fyne.CurrentApp().NewWindow(title)
-	popup.Resize(fyne.NewSize(300, 200))
+	popup := fyne.CurrentApp().NewWindow(title)	
 	popup.SetPadded(false)
 	return popup
 }
@@ -24,13 +23,13 @@ func showPopup(dict Dictionary, acronym string) {
 		content = createDefinitionPopup(popup, dict, acronym)
 	} else {
 		popup = createPopup(fmt.Sprintf("Lookup: %s", acronym))
-		content = createLookupPopup(popup, definitions, acronym)
+		content = createLookupPopup(popup, definitions)
 	}
 	popup.SetContent(content)
 	popup.Show()
 }
 
-func createLookupPopup(popup fyne.Window, definitions []Acronym, acronym string) fyne.CanvasObject {
+func createLookupPopup(popup fyne.Window, definitions []Acronym) fyne.CanvasObject {
 	var definitionsText string
 		for _, acro := range definitions {
 			definitionsText += fmt.Sprintf("%s: %s\n", acro.Expanded, acro.Definition)

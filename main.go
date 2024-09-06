@@ -2,16 +2,18 @@ package main
 
 import (
 	"fmt"
+	"os/exec"
+	"runtime"
 	"time"
 
-	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
-	"github.com/atotto/clipboard"
-	"github.com/go-vgo/robotgo"
+	// "github.com/atotto/clipboard"
+	// "github.com/go-vgo/robotgo"
 	"github.com/robotn/gohook"
 )
 
@@ -128,15 +130,36 @@ func addAcronymSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, acron
 	}, win)
 }
 
+// func simulateCopy() (string, error) {	
+// 	robotgo.KeyTap(robotgo.CmdCtrl(), "c")		
+// 	text, err := clipboard.ReadAll()
+// 	if err != nil {
+// 		fmt.Println("Error reading clipboard:", err)
+// 	}
+// 	fmt.Println("Clipboard text:", text)
+// 	return text, err	
+// }
 
-func simulateCopy() (string, error) {	
-	robotgo.KeyTap(robotgo.CmdCtrl(), "c")		
-	text, err := clipboard.ReadAll()
-	if err != nil {
-		fmt.Println("Error reading clipboard:", err)
+func getHighlightedText() (string, error) {
+	var cmd *exec.Cmd
+
+	switch runtime.GOOS {
+	case "darwin":
+		cmd = exec.Command("osascript", "-e", `tell application "System Events" to keystroke "c" using command down`)
+	case "linux":
+		cmd = exec.Command("xsel", "-o")
+	case "windows":
+		cmd = exec.Command("powershell", "-command", "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.Clipboard]::GetText()")
+	default:
+		return "", fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
 	}
-	fmt.Println("Clipboard text:", text)
-	return text, err	
+
+	output, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("failed to get highlighted text: %w", err)
+	}
+
+	return string(output), nil
 }
 
 func setupGlobalHotkeys(win fyne.Window, dict Dictionary) {	
@@ -146,7 +169,7 @@ func setupGlobalHotkeys(win fyne.Window, dict Dictionary) {
 		}
 		fmt.Println("Hotkey pressed")
 		
-		text, err := simulateCopy()
+		text, err := getHighlightedText()
 		lastPressedTime = time.Now()
 
 		if err != nil {
