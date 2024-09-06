@@ -130,26 +130,19 @@ func addAcronymSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, acron
 	}, win)
 }
 
-// func simulateCopy() (string, error) {	
-// 	robotgo.KeyTap(robotgo.CmdCtrl(), "c")		
-// 	text, err := clipboard.ReadAll()
-// 	if err != nil {
-// 		fmt.Println("Error reading clipboard:", err)
-// 	}
-// 	fmt.Println("Clipboard text:", text)
-// 	return text, err	
-// }
-
 func getHighlightedText() (string, error) {
 	var cmd *exec.Cmd
 
 	switch runtime.GOOS {
 	case "darwin":
-		cmd = exec.Command("osascript", "-e", `tell application "System Events" to keystroke "c" using command down`)
+		// Use AppleScript to get the clipboard content on macOS
+		cmd = exec.Command("osascript", "-e", `the clipboard as text`)
 	case "linux":
-		cmd = exec.Command("xsel", "-o")
+		// Use xclip or xsel to get the clipboard content on Linux
+		cmd = exec.Command("xsel", "-o") // or "xclip -o" if you prefer xclip
 	case "windows":
-		cmd = exec.Command("powershell", "-command", "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.Clipboard]::GetText()")
+		// Use PowerShell to get the clipboard content on Windows
+		cmd = exec.Command("powershell", "-command", "Get-Clipboard")
 	default:
 		return "", fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
 	}
