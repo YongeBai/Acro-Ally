@@ -41,6 +41,13 @@ func createLookupPopup(popup fyne.Window, definitions []Acronym) fyne.CanvasObje
 		widget.NewLabel(definitionsText),
 		okButton,
 	)
+
+	popup.Canvas().SetOnTypedKey(func(ke *fyne.KeyEvent) {
+        if ke.Name == fyne.KeyReturn || ke.Name == fyne.KeyEnter {
+            popup.Close()
+        }
+    })
+
 	x, y := robotgo.Location()
 	y -= 200
 	pos := fyne.NewPos(float32(x), float32(y))
@@ -83,6 +90,12 @@ func createDefinitionPopup(popup fyne.Window, dict Dictionary, acronym string) f
 		definitionEntry,
 		addButton,
 	)
+
+	popup.Canvas().SetOnTypedKey(func(ke *fyne.KeyEvent) {
+        if ke.Name == fyne.KeyReturn || ke.Name == fyne.KeyEnter {
+            popup.Close()
+        }
+    })
 
 	return content
 }

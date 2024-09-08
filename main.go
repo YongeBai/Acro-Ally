@@ -86,31 +86,41 @@ func lookUpOrDefineSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, a
 	fmt.Println("Looking up or defining:", acronym)
 	if _, ok := dict[acronym]; !ok {
 		addAcronymSearch(win, tree, dict, acronym)
-	} else {
-		var definitions string
-		for _, acro := range dict[acronym] {
-			definitions += fmt.Sprintf("%s: %s\n", acro.Expanded, acro.Definition)
-		}
-		dialog.ShowInformation(
-			fmt.Sprintf("Acronym %s found", acronym),
-			definitions,
-			win,
-		)
+		return
+	} 
+	var definitions string
+	for _, acro := range dict[acronym] {
+		definitions += fmt.Sprintf("%s: %s\n", acro.Expanded, acro.Definition)
 	}
+	d := dialog.NewInformation(
+		fmt.Sprintf("Acronym %s found", acronym),
+		definitions,
+		win,
+	)
+	d.Show()
+	win.Canvas().SetOnTypedKey(func(ke *fyne.KeyEvent) {
+		if ke.Name == fyne.KeyReturn || ke.Name == fyne.KeyEnter {
+			d.Hide()
+		}
+	})
 }
 
-func addAcronymSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, acronym string) {
-
+func addAcronymSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, acronym string) {	
 	expandEntry := widget.NewEntry()
 	expandEntry.SetPlaceHolder("Enter the expanded form")
 
 	definitionEntry := widget.NewEntry()
 	definitionEntry.SetPlaceHolder("Enter the definition")
 
-	dialog.ShowForm(fmt.Sprintf("Add Acronym: %s", acronym), "Add", "Cancel", []*widget.FormItem{		
-		widget.NewFormItem("Expanded", expandEntry),
-		widget.NewFormItem("Definition", definitionEntry),
-	}, func(add bool) {
+	dialog.NewForm(
+		fmt.Sprintf("Add Acronym: %s", acronym), 
+		"Add", 
+		"Cancel", 
+		[]*widget.FormItem{		
+			widget.NewFormItem("Expanded", expandEntry),
+			widget.NewFormItem("Definition", definitionEntry),
+		}, 
+		func(add bool) {
 		if add && expandEntry.Text != "" && definitionEntry.Text != "" {
 			newAcronym := Acronym{
 				Expanded:   expandEntry.Text,
@@ -131,28 +141,41 @@ func addAcronymSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, acron
 }
 
 func getHighlightedText() (string, error) {
-	var cmd *exec.Cmd
+    var cmd *exec.Cmd
 
-	switch runtime.GOOS {
-	case "darwin":
-		// Use AppleScript to get the clipboard content on macOS
-		cmd = exec.Command("osascript", "-e", `the clipboard as text`)
-	case "linux":
-		// Use xclip or xsel to get the clipboard content on Linux
-		cmd = exec.Command("xsel", "-o") // or "xclip -o" if you prefer xclip
-	case "windows":
-		// Use PowerShell to get the clipboard content on Windows
-		cmd = exec.Command("powershell", "-command", "Get-Clipboard")
-	default:
-		return "", fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
-	}
+    switch runtime.GOOS {
+    case "darwin":
+        // Use AppleScript to get the selected text on macOS
+        script := `
+            tell application "System Events"
+                keystroke "c" using {command down}
+            end tell
+            delay 0.1
+            return the clipboard
+        `
+        cmd = exec.Command("osascript", "-e", script)
+    case "linux":
+        // Use xsel to get the primary selection on Linux
+        cmd = exec.Command("xsel", "-p")
+    case "windows":
+        // Use PowerShell to simulate Ctrl+C and get clipboard content
+        script := `
+            Add-Type -AssemblyName System.Windows.Forms
+            [System.Windows.Forms.SendKeys]::SendWait("^c")
+            Start-Sleep -Milliseconds 100
+            Get-Clipboard
+        `
+        cmd = exec.Command("powershell", "-command", script)
+    default:
+        return "", fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
+    }
 
-	output, err := cmd.Output()
-	if err != nil {
-		return "", fmt.Errorf("failed to get highlighted text: %w", err)
-	}
+    output, err := cmd.Output()
+    if err != nil {
+        return "", fmt.Errorf("failed to get highlighted text: %w", err)
+    }
 
-	return string(output), nil
+    return string(output), nil
 }
 
 func setupGlobalHotkeys(win fyne.Window, dict Dictionary) {	
