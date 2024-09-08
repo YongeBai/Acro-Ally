@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
+	"path/filepath"
 )
 
 type Acronym struct {
@@ -14,11 +16,20 @@ type Acronym struct {
 type Dictionary map[string][]Acronym
 
 func saveDictionary(dict Dictionary, filename string) error {
-	data, err := json.MarshalIndent(dict, "", "  ")
-	if err != nil {
-		return err
+	dir := filepath.Dir(filename)
+    if err := os.MkdirAll(dir, 0755); err != nil {
+        return fmt.Errorf("failed to create directory: %w", err)
+    }
+
+    data, err := json.MarshalIndent(dict, "", "  ")
+    if err != nil {
+        return fmt.Errorf("failed to marshal dictionary: %w", err)
+    }
+
+    if err := os.WriteFile(filename, data, 0644); err != nil {
+        return fmt.Errorf("failed to write file: %w", err)
 	}
-	return os.WriteFile(filename, data, 0644)
+	return nil	
 }
 
 func loadDictionary(filename string) (Dictionary, error) {

@@ -21,11 +21,11 @@ var dict Dictionary
 var lastPressedTime time.Time
 var debounceTime = 300 * time.Millisecond
 var tree *widget.Tree
-
+var dictPath = "dict/acronyms.json"
 
 func main() {
 	var err error
-	dict, err = loadDictionary("acronyms.json")
+	dict, err = loadDictionary(dictPath)
 	if err != nil {
 		fmt.Println("No dictionary found, creating new one:", err)
 		dict = make(Dictionary)
@@ -132,7 +132,7 @@ func addAcronymSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, acron
 			dict[acronym] = append(dict[acronym], newAcronym)
 			tree.Refresh()
 			fmt.Printf("Dictionary after adding: %+v\n", dict)
-			err := saveDictionary(dict, "acronyms.json")
+			err := saveDictionary(dict, dictPath)
 			if err != nil {
 				dialog.ShowError(err, win)
 			}
