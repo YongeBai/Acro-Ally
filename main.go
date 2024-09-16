@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os/exec"
-	"runtime"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -12,8 +10,7 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
-	// "github.com/atotto/clipboard"
-	// "github.com/go-vgo/robotgo"
+	"github.com/atotto/clipboard"
 	"github.com/robotn/gohook"
 )
 
@@ -33,7 +30,7 @@ func main() {
 	fmt.Println(dict)
 	
 	myApp := app.New()
-	mainWindow := myApp.NewWindow("Acro-Ally")	
+	mainWindow := myApp.NewWindow("TeamDict")	
 	mainWindow.SetMaster()
 
 	tree = createAcronymTree(dict)
@@ -140,43 +137,6 @@ func addAcronymSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, acron
 	}, win)
 }
 
-func getHighlightedText() (string, error) {
-    var cmd *exec.Cmd
-
-    switch runtime.GOOS {
-    case "darwin":
-        // Use AppleScript to get the selected text on macOS
-        script := `
-            tell application "System Events"
-                keystroke "c" using {command down}
-            end tell
-            delay 0.1
-            return the clipboard
-        `
-        cmd = exec.Command("osascript", "-e", script)
-    case "linux":
-        // Use xsel to get the primary selection on Linux
-        cmd = exec.Command("xsel", "-p")
-    case "windows":
-        // Use PowerShell to simulate Ctrl+C and get clipboard content
-        script := `
-            Add-Type -AssemblyName System.Windows.Forms
-            [System.Windows.Forms.SendKeys]::SendWait("^c")
-            Start-Sleep -Milliseconds 100
-            Get-Clipboard
-        `
-        cmd = exec.Command("powershell", "-command", script)
-    default:
-        return "", fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
-    }
-
-    output, err := cmd.Output()
-    if err != nil {
-        return "", fmt.Errorf("failed to get highlighted text: %w", err)
-    }
-
-    return string(output), nil
-}
 
 func setupGlobalHotkeys(win fyne.Window, dict Dictionary) {	
 	hook.Register(hook.KeyDown, []string{"ctrl", "alt", "d"}, func(e hook.Event) {		
@@ -185,7 +145,8 @@ func setupGlobalHotkeys(win fyne.Window, dict Dictionary) {
 		}
 		fmt.Println("Hotkey pressed")
 		
-		text, err := getHighlightedText()
+		// read clipboard
+		text, err := clipboard.ReadAll()
 		lastPressedTime = time.Now()
 
 		if err != nil {

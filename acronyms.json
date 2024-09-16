@@ -1,64 +1,14 @@
 {
-  "GPT": [
+  "2G": [
     {
-      "expanded": "GEE",
-      "definition": "OEE TTEEE"
+      "expanded": "2nd Generation",
+      "definition": "First digital generation of mobile systems/technology, includes GSM, TDMA, PDC, and cdmaOne. Texting became popular"
     }
   ],
-  "LLM": [
+  "3PP": [
     {
-      "expanded": "Large",
-      "definition": "Languagge model"
-    },
-    {
-      "expanded": "LARGE LING",
-      "definition": "LAKHdkjashfkjh"
-    }
-  ],
-  "New": [
-    {
-      "expanded": "a",
-      "definition": "a"
-    }
-  ],
-  "acro": [
-    {
-      "expanded": "acro",
-      "definition": "acro-ally"
-    }
-  ],
-  "defin": [
-    {
-      "expanded": "DEEEFFFIN",
-      "definition": "define is define"
-    }
-  ],
-  "new": [
-    {
-      "expanded": "acro",
-      "definition": "nym"
-    },
-    {
-      "expanded": "acro",
-      "definition": "nym"
-    }
-  ],
-  "shortcuts": [
-    {
-      "expanded": "short",
-      "definition": "shorties"
-    }
-  ],
-  "theme": [
-    {
-      "expanded": "Thene",
-      "definition": "Theme"
-    }
-  ],
-  "widget": [
-    {
-      "expanded": "wid",
-      "definition": "widget is widge"
+      "expanded": "3rd Party Product",
+      "definition": "Suppliers and vendors products"
     }
   ]
 }
