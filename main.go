@@ -18,7 +18,7 @@ var dict Dictionary
 var lastPressedTime time.Time
 var debounceTime = 300 * time.Millisecond
 var tree *widget.Tree
-var dictPath = "dict/acronyms.json"
+var dictPath = "./dict/acronyms.json"
 
 func main() {
 	var err error
@@ -109,7 +109,7 @@ func addAcronymSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, acron
 	definitionEntry := widget.NewEntry()
 	definitionEntry.SetPlaceHolder("Enter the definition")
 
-	dialog.NewForm(
+	formDialog := dialog.NewForm(
 		fmt.Sprintf("Add Acronym: %s", acronym), 
 		"Add", 
 		"Cancel", 
@@ -118,23 +118,26 @@ func addAcronymSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, acron
 			widget.NewFormItem("Definition", definitionEntry),
 		}, 
 		func(add bool) {
-		if add && expandEntry.Text != "" && definitionEntry.Text != "" {
-			newAcronym := Acronym{
-				Expanded:   expandEntry.Text,
-				Definition: definitionEntry.Text,
+			if add && expandEntry.Text != "" && definitionEntry.Text != "" {
+				newAcronym := Acronym{
+					Expanded:   expandEntry.Text,
+					Definition: definitionEntry.Text,
+				}
+				if _, ok := dict[acronym]; !ok {
+					dict[acronym] = []Acronym{}
+				}
+				dict[acronym] = append(dict[acronym], newAcronym)
+				tree.Refresh()
+				fmt.Printf("Dictionary after adding: %+v\n", dict)
+				err := saveDictionary(dict, dictPath)
+				if err != nil {
+					dialog.ShowError(err, win)
+				}
 			}
-			if _, ok := dict[acronym]; !ok {
-				dict[acronym] = []Acronym{}
-			}
-			dict[acronym] = append(dict[acronym], newAcronym)
-			tree.Refresh()
-			fmt.Printf("Dictionary after adding: %+v\n", dict)
-			err := saveDictionary(dict, dictPath)
-			if err != nil {
-				dialog.ShowError(err, win)
-			}
-		}
-	}, win)
+		}, 
+		win,
+	)
+	formDialog.Show() 
 }
 
 

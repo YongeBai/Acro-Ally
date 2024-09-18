@@ -6,11 +6,10 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
-	"github.com/go-vgo/robotgo"
 )
 
 func createPopup(title string) fyne.Window {
-	popup := fyne.CurrentApp().NewWindow(title)	
+	popup := fyne.CurrentApp().NewWindow(title)		
 	popup.SetPadded(false)
 	return popup
 }
@@ -26,32 +25,35 @@ func showPopup(dict Dictionary, acronym string) {
 		content = createLookupPopup(popup, definitions)
 	}
 	popup.SetContent(content)
+	popup.Resize(fyne.NewSize(200, 200))
+	
 	popup.Show()
 }
 
 func createLookupPopup(popup fyne.Window, definitions []Acronym) fyne.CanvasObject {
 	var definitionsText string
-		for _, acro := range definitions {
-			definitionsText += fmt.Sprintf("%s: %s\n", acro.Expanded, acro.Definition)
-		}
+	for _, acro := range definitions {
+		definitionsText += fmt.Sprintf("**%s**: %s\n\n", acro.Expanded, acro.Definition)
+	}
+
+	richText := widget.NewRichTextFromMarkdown(definitionsText)
+	richText.Wrapping = fyne.TextWrapWord
+
 	okButton := widget.NewButton("OK", func() {	
 		popup.Close()
 	})
+
 	content := container.NewVBox(
-		widget.NewLabel(definitionsText),
+		richText,
 		okButton,
-	)
+	)	
 
 	popup.Canvas().SetOnTypedKey(func(ke *fyne.KeyEvent) {
-        if ke.Name == fyne.KeyReturn || ke.Name == fyne.KeyEnter {
-            popup.Close()
-        }
-    })
-
-	x, y := robotgo.Location()
-	y -= 200
-	pos := fyne.NewPos(float32(x), float32(y))
-	content.Move(pos)
+		if ke.Name == fyne.KeyReturn || ke.Name == fyne.KeyEnter {
+			popup.Close()
+		}
+	})
+	
 	return content 
 }
 
@@ -61,6 +63,7 @@ func createDefinitionPopup(popup fyne.Window, dict Dictionary, acronym string) f
 
 	definitionEntry := widget.NewMultiLineEntry()
 	definitionEntry.SetPlaceHolder("Enter the definition")
+	definitionEntry.Wrapping = fyne.TextWrapWord
 
 	addButton := widget.NewButton("Add", func() {
 		if expandEntry.Text != "" && definitionEntry.Text != "" {
@@ -92,10 +95,10 @@ func createDefinitionPopup(popup fyne.Window, dict Dictionary, acronym string) f
 	)
 
 	popup.Canvas().SetOnTypedKey(func(ke *fyne.KeyEvent) {
-        if ke.Name == fyne.KeyReturn || ke.Name == fyne.KeyEnter {
-            popup.Close()
-        }
-    })
+		if ke.Name == fyne.KeyReturn || ke.Name == fyne.KeyEnter {
+			popup.Close()
+		}
+	})
 
 	return content
 }

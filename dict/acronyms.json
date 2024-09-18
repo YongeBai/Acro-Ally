@@ -1,0 +1,50 @@
+{
+  "AI": [
+    {
+      "expanded": "Artificial Intelligence",
+      "definition": "Artificial Intelligence (AI) is a field of study that focuses on creating intelligent machines that can perform tasks that typically require human-like intelligence, such as understanding natural language, recognizing images, and making decisions."
+    }
+  ],
+  "BLEU": [
+    {
+      "expanded": "bilingual evaluation understudy",
+      "definition": "BLEU (bilingual evaluation understudy) is an algorithm for evaluating the quality of text which has been machine-translated from one natural language to another. Quality is considered to be the correspondence between a machine's output and that of a human: \"the closer a machine translation is to a professional human translation, the better it is\" – this is the central idea behind BLEU"
+    }
+  ],
+  "DL": [
+    {
+      "expanded": "Deep Learning",
+      "definition": "Deep Learning is a subset of machine learning that involves training artificial neural networks with multiple layers to learn and make predictions based on complex data."
+    }
+  ],
+  "GLUE": [
+    {
+      "expanded": "General Language Understanding Evaluation",
+      "definition": "The General Language Understanding Evaluation (GLUE) benchmark is a collection of resources for training, evaluating, and analyzing natural language understanding systems."
+    }
+  ],
+  "GPU": [
+    {
+      "expanded": "Graphics Processing Unit",
+      "definition": "A graphics processing unit (GPU) is a specialized electronic circuit designed for digital image processing and to accelerate computer graphics, being present either as a discrete video card or embedded on motherboards, mobile phones, personal computers, workstations, and game consoles."
+    }
+  ],
+  "ML": [
+    {
+      "expanded": "Machine Learning",
+      "definition": "Machine Learning is a subset of artificial intelligence that involves training algorithms to make predictions or decisions based on data, without being explicitly programmed."
+    }
+  ],
+  "NLP": [
+    {
+      "expanded": "Natural Language Processing",
+      "definition": "Natural Language Processing (NLP) is a field of study that focuses on the interaction between computers and humans using natural language. It involves the development of algorithms and models to understand, interpret, and generate human language."
+    }
+  ],
+  "WMT": [
+    {
+      "expanded": "The Conference on Machine Translation",
+      "definition": "WMT is the main event for machine translation and machine translation research. The conference is held annually in connection with larger conferences on natural language processing."
+    }
+  ]
+}

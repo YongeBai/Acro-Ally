@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 )
@@ -28,22 +29,39 @@ func createAcronymTree(dict Dictionary) *widget.Tree {
 			return acro == "" || len(dict[acro]) > 0
 		},
 		func(branch bool) fyne.CanvasObject {
-			return widget.NewLabel("")
+			return container.NewStack(container.NewVScroll(widget.NewRichText()))
 		},
 		func(acro widget.TreeNodeID, branch bool, obj fyne.CanvasObject) {
-			label := obj.(*widget.Label)
+			scrollContainer := obj.(*fyne.Container)
+			richText := scrollContainer.Objects[0].(*container.Scroll).Content.(*widget.RichText)
+			richText.Wrapping = fyne.TextWrapWord
+
 			if acro == "" {
-				label.SetText("Acronyms")
+				richText.ParseMarkdown("**Acronyms**")
 			} else if branch {
-				label.SetText(acro)
+				richText.ParseMarkdown(fmt.Sprintf("**%s**", acro))
 			} else {
-				label.SetText(acro)
+				parts := splitAcronymDefinition(acro)
+				if len(parts) == 2 {
+					richText.ParseMarkdown(fmt.Sprintf("**%s**: %s", parts[0], parts[1]))
+				} else {
+					richText.ParseMarkdown(acro)
+				}
 			}
 		},
 	)
 	
-	
 	return tree
+}
+
+// Helper function to split the acronym definition string
+func splitAcronymDefinition(s string) []string {
+	for i := 0; i < len(s); i++ {
+		if s[i] == ':' {
+			return []string{s[:i], s[i+1:]}
+		}
+	}
+	return []string{s}
 }
 
 func addAcronymButton(win fyne.Window, tree *widget.Tree, dict Dictionary) {
