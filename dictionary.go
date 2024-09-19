@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -29,23 +30,36 @@ func createAcronymTree(dict Dictionary) *widget.Tree {
 			return acro == "" || len(dict[acro]) > 0
 		},
 		func(branch bool) fyne.CanvasObject {
-			return container.NewStack(container.NewVScroll(widget.NewRichText()))
+			expanded := widget.NewLabel("")
+			expanded.TextStyle = fyne.TextStyle{Bold: true}
+			expanded.Wrapping = fyne.TextWrapWord
+
+			definition := widget.NewLabel("")
+			definition.Wrapping = fyne.TextWrapWord
+			definition.Hide()
+
+			return container.NewVBox(
+				expanded,
+				definition,
+			)
 		},
 		func(acro widget.TreeNodeID, branch bool, obj fyne.CanvasObject) {
-			scrollContainer := obj.(*fyne.Container)
-			richText := scrollContainer.Objects[0].(*container.Scroll).Content.(*widget.RichText)
-			richText.Wrapping = fyne.TextWrapWord
+			vbox := obj.(*fyne.Container)
+			expanded := vbox.Objects[0].(*widget.Label)
+			definition := vbox.Objects[1].(*widget.Label)
 
 			if acro == "" {
-				richText.ParseMarkdown("**Acronyms**")
+				expanded.SetText("Acronyms")				
 			} else if branch {
-				richText.ParseMarkdown(fmt.Sprintf("**%s**", acro))
+				expanded.SetText(acro)
 			} else {
-				parts := splitAcronymDefinition(acro)
+				 parts := strings.SplitN(acro, ":", 2)
 				if len(parts) == 2 {
-					richText.ParseMarkdown(fmt.Sprintf("**%s**: %s", parts[0], parts[1]))
+					expanded.SetText(fmt.Sprintf("%s:", parts[0]))
+					definition.SetText(parts[1])
+					definition.Show()
 				} else {
-					richText.ParseMarkdown(acro)
+					expanded.SetText(acro)
 				}
 			}
 		},
@@ -54,15 +68,6 @@ func createAcronymTree(dict Dictionary) *widget.Tree {
 	return tree
 }
 
-// Helper function to split the acronym definition string
-func splitAcronymDefinition(s string) []string {
-	for i := 0; i < len(s); i++ {
-		if s[i] == ':' {
-			return []string{s[:i], s[i+1:]}
-		}
-	}
-	return []string{s}
-}
 
 func addAcronymButton(win fyne.Window, tree *widget.Tree, dict Dictionary) {
 	acronymEntry := widget.NewEntry()

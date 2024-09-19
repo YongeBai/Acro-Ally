@@ -85,15 +85,34 @@ func lookUpOrDefineSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, a
 		addAcronymSearch(win, tree, dict, acronym)
 		return
 	} 
-	var definitions string
+	
+	definitions := container.NewVBox()
 	for _, acro := range dict[acronym] {
-		definitions += fmt.Sprintf("%s: %s\n", acro.Expanded, acro.Definition)
+		acroLabel := widget.NewLabel(acro.Expanded)
+		acroLabel.TextStyle = fyne.TextStyle{Bold: true}
+		acroLabel.Wrapping = fyne.TextWrapWord
+
+		definitionLabel := widget.NewLabel(acro.Definition)
+		definitionLabel.Wrapping = fyne.TextWrapWord
+
+		definitionBox := container.NewVBox(
+			acroLabel,
+			definitionLabel,
+			widget.NewSeparator(),
+		)
+		definitions.Add(definitionBox)
 	}
-	d := dialog.NewInformation(
+
+	scrollContainer := container.NewScroll(definitions)
+	scrollContainer.SetMinSize(fyne.NewSize(400, 300)) 
+
+	d := dialog.NewCustom(
 		fmt.Sprintf("Acronym %s found", acronym),
-		definitions,
+		"Close",
+		scrollContainer,
 		win,
 	)
+	d.Resize(fyne.NewSize(350, 250)) // Adjust dialog size as needed
 	d.Show()
 	win.Canvas().SetOnTypedKey(func(ke *fyne.KeyEvent) {
 		if ke.Name == fyne.KeyReturn || ke.Name == fyne.KeyEnter {
