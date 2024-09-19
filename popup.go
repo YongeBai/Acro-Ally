@@ -5,6 +5,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -25,6 +26,8 @@ func showPopup(dict Dictionary, acronym string) {
 		content = createLookupPopup(popup, definitions)
 	}
 	popup.SetContent(content)
+	fmt.Println("content size:", content.MinSize())
+	
 	popup.Resize(fyne.NewSize(400, 200))
 	
 	popup.Show()
@@ -45,6 +48,7 @@ func createLookupPopup(popup fyne.Window, definitions []Acronym) fyne.CanvasObje
 
 	content := container.NewVBox(
 		richText,
+		layout.NewSpacer(),
 		okButton,
 	)	
 	scrollContainer := container.NewVScroll(content)
