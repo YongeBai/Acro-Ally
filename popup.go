@@ -81,7 +81,7 @@ func createDefinitionPopup(popup fyne.Window, dict Dictionary, acronym string) f
 			}
 			dict[acronym] = append(dict[acronym], newAcronym)
 			tree.Refresh()
-			err := saveDictionary(dict, "acronyms.json")
+			err := saveDictionary(dict, dictPath)
 			if err != nil {
 				fyne.CurrentApp().SendNotification(&fyne.Notification{
 					Title:   "Error",

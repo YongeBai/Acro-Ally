@@ -95,7 +95,7 @@ func addAcronymButton(win fyne.Window, tree *widget.Tree, dict Dictionary) {
 			dict[acronymEntry.Text] = append(dict[acronymEntry.Text], newAcronym)
 			tree.Refresh()
 			fmt.Printf("Dictionary after adding: %+v\n", dict)
-			err := saveDictionary(dict, "acronyms.json")
+			err := saveDictionary(dict, dictPath)
 			if err != nil {
 				dialog.ShowError(err, win)
 			}
