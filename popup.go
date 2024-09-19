@@ -25,7 +25,7 @@ func showPopup(dict Dictionary, acronym string) {
 		content = createLookupPopup(popup, definitions)
 	}
 	popup.SetContent(content)
-	popup.Resize(fyne.NewSize(200, 200))
+	popup.Resize(fyne.NewSize(400, 200))
 	
 	popup.Show()
 }
@@ -38,7 +38,7 @@ func createLookupPopup(popup fyne.Window, definitions []Acronym) fyne.CanvasObje
 
 	richText := widget.NewRichTextFromMarkdown(definitionsText)
 	richText.Wrapping = fyne.TextWrapWord
-
+	
 	okButton := widget.NewButton("OK", func() {	
 		popup.Close()
 	})
@@ -47,6 +47,7 @@ func createLookupPopup(popup fyne.Window, definitions []Acronym) fyne.CanvasObje
 		richText,
 		okButton,
 	)	
+	scrollContainer := container.NewVScroll(content)
 
 	popup.Canvas().SetOnTypedKey(func(ke *fyne.KeyEvent) {
 		if ke.Name == fyne.KeyReturn || ke.Name == fyne.KeyEnter {
@@ -54,7 +55,7 @@ func createLookupPopup(popup fyne.Window, definitions []Acronym) fyne.CanvasObje
 		}
 	})
 	
-	return content 
+	return scrollContainer
 }
 
 func createDefinitionPopup(popup fyne.Window, dict Dictionary, acronym string) fyne.CanvasObject {
