@@ -3,71 +3,112 @@ package main
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 )
 
+type acronymLayout struct{}
+
+func (al *acronymLayout) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	if len(objects) != 2 {
+		return
+	}
+	expanded := objects[0]
+	definition := objects[1]
+
+	// Set a maximum width for the expanded label (e.g., 30% of the total width)
+	maxExpandedWidth := float32(size.Width) * 0.3
+	expandedSize := expanded.MinSize()
+	if expandedSize.Width > maxExpandedWidth {
+		expandedSize.Width = maxExpandedWidth
+	}
+
+	// Position and resize the expanded label
+	expanded.Resize(expandedSize)
+	expanded.Move(fyne.NewPos(0, 0))
+
+	// Calculate remaining space for the definition
+	defX := expandedSize.Width + theme.Padding()
+	defWidth := size.Width - defX
+	defHeight := size.Height
+
+	// Resize and position the definition label
+	definition.Resize(fyne.NewSize(defWidth, defHeight))
+	definition.Move(fyne.NewPos(defX, 0))
+}
+
+func (al *acronymLayout) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	if len(objects) != 2 {
+		return fyne.NewSize(0, 0)
+	}
+	expanded := objects[0]
+	definition := objects[1]
+
+	// Calculate minimum width based on both labels
+	minWidth := expanded.MinSize().Width + theme.Padding() + definition.MinSize().Width
+	
+	// Use the height of the taller label
+	minHeight := fyne.Max(expanded.MinSize().Height, definition.MinSize().Height)
+	
+	return fyne.NewSize(minWidth, minHeight)
+}
+
 func createAcronymTree(dict Dictionary) *widget.Tree {
-	tree := widget.NewTree(
-		func(acro widget.TreeNodeID) []widget.TreeNodeID {
-			if acro == "" {
+		tree := widget.NewTree(
+		func(id widget.TreeNodeID) []widget.TreeNodeID {
+			if id == "" {
 				return getSortedAcronyms(dict)
 			}
-			if entry, ok := dict[acro]; ok {
-				children := make([]widget.TreeNodeID, 0, len(entry))
-				for _, definition := range entry {
-					children = append(children, fmt.Sprintf("%s: %s", definition.Expanded, definition.Definition))
+			if entry, ok := dict[id]; ok {
+				children := make([]widget.TreeNodeID, len(entry))
+				for i, _ := range entry {
+					children[i] = fmt.Sprintf("%s:%d", id, i)
 				}
 				return children
 			}
-			return []widget.TreeNodeID{}
+			return nil
 		},
-		func(acro widget.TreeNodeID) bool {
-			return acro == "" || len(dict[acro]) > 0
+		func(id widget.TreeNodeID) bool {
+			return !strings.Contains(id, ":")
 		},
 		func(branch bool) fyne.CanvasObject {
 			expanded := widget.NewLabel("")
 			expanded.TextStyle = fyne.TextStyle{Bold: true}
-			expanded.Wrapping = fyne.TextWrapWord
 
 			definition := widget.NewLabel("")
 			definition.Wrapping = fyne.TextWrapWord
-			definition.Hide()
 
-			return container.NewVBox(
-				expanded,
-				definition,
-			)
+			return container.New(&acronymLayout{}, expanded, definition)
 		},
-		func(acro widget.TreeNodeID, branch bool, obj fyne.CanvasObject) {
-			vbox := obj.(*fyne.Container)
-			expanded := vbox.Objects[0].(*widget.Label)
-			definition := vbox.Objects[1].(*widget.Label)
+		func(id widget.TreeNodeID, branch bool, o fyne.CanvasObject) {
+			container := o.(*fyne.Container)
+			expanded := container.Objects[0].(*widget.Label)
+			definition := container.Objects[1].(*widget.Label)
 
-			if acro == "" {
-				expanded.SetText("Acronyms")				
-			} else if branch {
-				expanded.SetText(acro)
+			if branch {
+				expanded.SetText(id)
+				definition.SetText("")
 			} else {
-				 parts := strings.SplitN(acro, ":", 2)
+				parts := strings.SplitN(id, ":", 2)
 				if len(parts) == 2 {
-					expanded.SetText(fmt.Sprintf("%s:", parts[0]))
-					definition.SetText(parts[1])
-					definition.Show()
-				} else {
-					expanded.SetText(acro)
+					acronym := parts[0]
+					index, _ := strconv.Atoi(parts[1])
+					entry := dict[acronym][index]
+					expanded.SetText(entry.Expanded)
+					definition.SetText(entry.Definition)
 				}
 			}
 		},
 	)
-	
+
 	return tree
 }
-
 
 func addAcronymButton(win fyne.Window, tree *widget.Tree, dict Dictionary) {
 	acronymEntry := widget.NewEntry()
