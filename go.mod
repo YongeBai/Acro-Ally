@@ -1,4 +1,4 @@
-module TeamDict
+module Acro-Ally
 
 go 1.23.0
 

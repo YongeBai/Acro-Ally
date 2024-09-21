@@ -8,10 +8,9 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
-	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/atotto/clipboard"
-	"github.com/robotn/gohook"
+	hook "github.com/robotn/gohook"
 )
 
 var dict Dictionary
@@ -26,11 +25,11 @@ func main() {
 	if err != nil {
 		fmt.Println("No dictionary found, creating new one:", err)
 		dict = make(Dictionary)
-	}	
+	}
 	fmt.Println(dict)
-	
+
 	myApp := app.New()
-	mainWindow := myApp.NewWindow("TeamDict")	
+	mainWindow := myApp.NewWindow("Acro-Ally")
 	mainWindow.SetMaster()
 
 	tree = createAcronymTree(dict)
@@ -40,7 +39,6 @@ func main() {
 	searchEntry.OnSubmitted = func(text string) {
 		lookUpOrDefineSearch(mainWindow, tree, dict, text)
 	}
-
 
 	content := container.NewBorder(
 		container.NewVBox(
@@ -53,17 +51,6 @@ func main() {
 			widget.NewButton("Exit", func() {
 				myApp.Quit()
 			}),
-        	layout.NewSpacer(),
-        	container.NewHBox(
-            	layout.NewSpacer(),
-				widget.NewButton("Import Acronyms", func() {
-					importDictionaryDialog(mainWindow, tree, &dict)
-				}),
-				widget.NewButton("Export Acronyms", func() {
-					exportDictionaryDialog(mainWindow, &dict)
-				}),				
-            layout.NewSpacer(),
-        ),
 		),
 		nil,
 		nil,
@@ -84,8 +71,8 @@ func lookUpOrDefineSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, a
 	if _, ok := dict[acronym]; !ok {
 		addAcronymSearch(win, tree, dict, acronym)
 		return
-	} 
-	
+	}
+
 	definitions := container.NewVBox()
 	for _, acro := range dict[acronym] {
 		acroLabel := widget.NewLabel(acro.Expanded)
@@ -104,7 +91,7 @@ func lookUpOrDefineSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, a
 	}
 
 	scrollContainer := container.NewScroll(definitions)
-	scrollContainer.SetMinSize(fyne.NewSize(400, 300)) 
+	scrollContainer.SetMinSize(fyne.NewSize(400, 300))
 
 	d := dialog.NewCustom(
 		fmt.Sprintf("Acronym %s found", acronym),
@@ -121,7 +108,7 @@ func lookUpOrDefineSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, a
 	})
 }
 
-func addAcronymSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, acronym string) {	
+func addAcronymSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, acronym string) {
 	expandEntry := widget.NewEntry()
 	expandEntry.SetPlaceHolder("Enter the expanded form")
 
@@ -129,13 +116,13 @@ func addAcronymSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, acron
 	definitionEntry.SetPlaceHolder("Enter the definition")
 
 	formDialog := dialog.NewForm(
-		fmt.Sprintf("Add Acronym: %s", acronym), 
-		"Add", 
-		"Cancel", 
-		[]*widget.FormItem{		
+		fmt.Sprintf("Add Acronym: %s", acronym),
+		"Add",
+		"Cancel",
+		[]*widget.FormItem{
 			widget.NewFormItem("Expanded", expandEntry),
 			widget.NewFormItem("Definition", definitionEntry),
-		}, 
+		},
 		func(add bool) {
 			if add && expandEntry.Text != "" && definitionEntry.Text != "" {
 				newAcronym := Acronym{
@@ -153,20 +140,19 @@ func addAcronymSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, acron
 					dialog.ShowError(err, win)
 				}
 			}
-		}, 
+		},
 		win,
 	)
-	formDialog.Show() 
+	formDialog.Show()
 }
 
-
-func setupGlobalHotkeys(win fyne.Window, dict Dictionary) {	
-	hook.Register(hook.KeyDown, []string{"ctrl", "alt", "d"}, func(e hook.Event) {		
-		if time.Since(lastPressedTime) < debounceTime {						
-			return			
+func setupGlobalHotkeys(win fyne.Window, dict Dictionary) {
+	hook.Register(hook.KeyDown, []string{"ctrl", "alt", "d"}, func(e hook.Event) {
+		if time.Since(lastPressedTime) < debounceTime {
+			return
 		}
 		fmt.Println("Hotkey pressed")
-		
+
 		// read clipboard
 		text, err := clipboard.ReadAll()
 		lastPressedTime = time.Now()
@@ -177,7 +163,7 @@ func setupGlobalHotkeys(win fyne.Window, dict Dictionary) {
 		}
 		if text != "" {
 			showPopup(dict, text)
-		}		
+		}
 	})
 
 	s := hook.Start()
