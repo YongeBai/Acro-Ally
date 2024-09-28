@@ -145,7 +145,6 @@ func addAcronymSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, acron
 	)
 	formDialog.Show()
 }
-
 func setupGlobalHotkeys(win fyne.Window, dict Dictionary) {
 	hook.Register(hook.KeyDown, []string{"ctrl", "alt", "d"}, func(e hook.Event) {
 		if time.Since(lastPressedTime) < debounceTime {
@@ -169,3 +168,4 @@ func setupGlobalHotkeys(win fyne.Window, dict Dictionary) {
 	s := hook.Start()
 	<-hook.Process(s)
 }
+

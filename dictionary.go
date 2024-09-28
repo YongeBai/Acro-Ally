@@ -32,7 +32,7 @@ func createAcronymTree(dict Dictionary) *widget.Tree {
 		},
 		func(branch bool) fyne.CanvasObject {
 			expanded := widget.NewLabel("")
-			expanded.TextStyle = fyne.TextStyle{Bold: true}
+			expanded.Wrapping = fyne.TextWrapWord
 
 			return container.NewVBox(expanded)
 		},
@@ -40,12 +40,12 @@ func createAcronymTree(dict Dictionary) *widget.Tree {
 			container := o.(*fyne.Container)			
 			expanded := container.Objects[0].(*widget.Label)
 
-
 			if branch {
 				expanded.SetText(id)
-			} else {
-				
+			} else {				
 				parts := strings.SplitN(id, ":", 2)
+				fmt.Println(parts)
+				fmt.Println(id)
 				if len(parts) == 2 {
 					acronym := parts[0]
 					index, _ := strconv.Atoi(parts[1])
