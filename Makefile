@@ -1,6 +1,11 @@
 build-windows:
-	sudo usermod -aG docker $USER
-	fyne-cross windows -output Acro-Ally.exe -icon Icon.png
+	export CC=x86_64-w64-mingw32-gcc
+	export CXX=x86_64-w64-mingw32-g++
+	export CGO_ENABLED=1
+	export GOOS=windows
+	export GOARCH=amd64
+	fyne-cross windows
+
 
 build-linux:
 	fyne install .
