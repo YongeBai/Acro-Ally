@@ -12,7 +12,6 @@ type Acronym struct {
 	Definition string `json:"definition"`
 }
 
-
 type Dictionary map[string][]Acronym
 
 func saveDictionary(dict Dictionary, filename string) error {
@@ -33,13 +32,14 @@ func saveDictionary(dict Dictionary, filename string) error {
 }
 
 func loadDictionary(filename string) (Dictionary, error) {
-	data, err := os.ReadFile(filename)
+	data, err := os.ReadFile(filename)	
 	if err != nil {
 		return nil, err
 	}
 
 	var dict Dictionary
 	err = json.Unmarshal(data, &dict)
+	
 	if err != nil {
 		return nil, err
 	}

@@ -4,7 +4,7 @@ build-windows:
 	export CGO_ENABLED=1
 	export GOOS=windows
 	export GOARCH=amd64
-	fyne-cross windows
+	fyne-cross windows -arch=amd64
 
 
 build-linux:

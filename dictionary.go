@@ -44,8 +44,7 @@ func createAcronymTree(dict Dictionary) *widget.Tree {
 				expanded.SetText(id)
 			} else {				
 				parts := strings.SplitN(id, ":", 2)
-				fmt.Println(parts)
-				fmt.Println(id)
+				
 				if len(parts) == 2 {
 					acronym := parts[0]
 					index, _ := strconv.Atoi(parts[1])
@@ -85,7 +84,6 @@ func addAcronymButton(win fyne.Window, tree *widget.Tree, dict Dictionary) {
 			}
 			dict[acronymEntry.Text] = append(dict[acronymEntry.Text], newAcronym)
 			tree.Refresh()
-			fmt.Printf("Dictionary after adding: %+v\n", dict)
 			err := saveDictionary(dict, dictPath)
 			if err != nil {
 				dialog.ShowError(err, win)

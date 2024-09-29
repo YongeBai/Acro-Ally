@@ -26,7 +26,6 @@ func showPopup(dict Dictionary, acronym string) {
 		content = createLookupPopup(popup, definitions)
 	}
 	popup.SetContent(content)
-	fmt.Println("content size:", content.MinSize())
 	
 	popup.Resize(fyne.NewSize(400, 200))
 	
