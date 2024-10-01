@@ -11,6 +11,7 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 	"github.com/atotto/clipboard"
+	"github.com/joho/godotenv"
 	supa "github.com/nedpals/supabase-go"
 	hook "github.com/robotn/gohook"
 )
@@ -21,13 +22,18 @@ var debounceTime = 300 * time.Millisecond
 var tree *widget.Tree
 var dictPath = "dict/acronyms.json"
 
+func init() {
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Println("Error loading .env file")
+	}
+}
 
 func main() {
 	myApp := app.New()
 	mainWindow := myApp.NewWindow("Acro-Ally")
-	mainWindow.SetMaster()
+	mainWindow.SetMaster()	
 	if _, err := os.Stat("license_key.txt"); err == nil {
-
 		// License key file exists, read it
 		licenseKey, err := os.ReadFile("license_key.txt")
 		if err == nil && validateLicenseKey(string(licenseKey)) {
@@ -40,7 +46,6 @@ func main() {
 		// No license key file, prompt for a new one
 		checkLicenseKey(mainWindow)
 	}
-
 	var err error
 	dict, err = loadDictionary(dictPath)
 	if err != nil {
@@ -192,7 +197,6 @@ func checkLicenseKey(win fyne.Window) bool {
     licenseEntry.SetPlaceHolder("Enter your license key")
 
     var isValid bool
-    done := make(chan bool)
 
     formDialog := dialog.NewForm(
         "License Key Required",
@@ -206,7 +210,7 @@ func checkLicenseKey(win fyne.Window) bool {
                 licenseKey := licenseEntry.Text
                 isValid = validateLicenseKey(licenseKey)
                 if !isValid {
-                    dialog.ShowError(fmt.Errorf("invalid license key"), win)
+                    os.Exit(0)
                 } else {
                     saveLicenseKey(licenseKey)
                 }
@@ -214,15 +218,11 @@ func checkLicenseKey(win fyne.Window) bool {
                 // If canceled, exit the application
                 os.Exit(0)
             }
-            done <- true
         },
         win,
     )
 
     formDialog.Show()
-
-    // Wait for the dialog to be handled
-    <-done
 
     return isValid
 }
@@ -230,20 +230,29 @@ func checkLicenseKey(win fyne.Window) bool {
 func validateLicenseKey(licenseKey string) bool {
 	supabaseURL := os.Getenv("SUPABASE_URL")
 	supabaseKey := os.Getenv("SUPABASE_KEY")
+	
+	// Check if the environment variables are set
+	if supabaseURL == "" || supabaseKey == "" {
+		fmt.Println("Supabase URL or Key is not set")
+		return false
+	}
+
 	supabaseClient := supa.CreateClient(supabaseURL, supabaseKey)
 	
 	var results []map[string]interface{}
-	err := supabaseClient.DB.From("licenses").Select("is_active").Eq("license_key", licenseKey).Execute(&results)
+
+	err := supabaseClient.DB.From("licenses").
+		Select("*").
+		Eq("license_key", licenseKey).
+		Execute(&results)
+	
+	fmt.Println("Results:", results)
 	if err != nil {
-		panic(err)
+		fmt.Println("Error checking license key:", err)
+		return false
 	}
 
-	if len(results) == 0 {
-		return false // License key not found
-	}
-
-	isActive := results["is_active"].(bool)
-	return isActive
+	return len(results) > 0
 }
 
 func saveLicenseKey(licenseKey string) {
