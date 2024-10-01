@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -10,6 +11,7 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 	"github.com/atotto/clipboard"
+	supa "github.com/nedpals/supabase-go"
 	hook "github.com/robotn/gohook"
 )
 
@@ -19,7 +21,26 @@ var debounceTime = 300 * time.Millisecond
 var tree *widget.Tree
 var dictPath = "dict/acronyms.json"
 
+
 func main() {
+	myApp := app.New()
+	mainWindow := myApp.NewWindow("Acro-Ally")
+	mainWindow.SetMaster()
+	if _, err := os.Stat("license_key.txt"); err == nil {
+
+		// License key file exists, read it
+		licenseKey, err := os.ReadFile("license_key.txt")
+		if err == nil && validateLicenseKey(string(licenseKey)) {
+			// License key is valid, proceed with app
+		} else {
+			// License key is invalid or not found, prompt for a new one
+			checkLicenseKey(mainWindow)
+		}
+	} else {
+		// No license key file, prompt for a new one
+		checkLicenseKey(mainWindow)
+	}
+
 	var err error
 	dict, err = loadDictionary(dictPath)
 	if err != nil {
@@ -27,11 +48,6 @@ func main() {
 		fmt.Println(err)
 		dict = make(Dictionary)
 	}
-	// fmt.Println(dict)
-
-	myApp := app.New()
-	mainWindow := myApp.NewWindow("Acro-Ally")
-	mainWindow.SetMaster()
 
 	tree = createAcronymTree(dict)
 
@@ -170,3 +186,70 @@ func setupGlobalHotkeys(win fyne.Window, dict Dictionary) {
 	<-hook.Process(s)
 }
 
+
+func checkLicenseKey(win fyne.Window) bool {
+    licenseEntry := widget.NewEntry()
+    licenseEntry.SetPlaceHolder("Enter your license key")
+
+    var isValid bool
+    done := make(chan bool)
+
+    formDialog := dialog.NewForm(
+        "License Key Required",
+        "Submit",
+        "Cancel",
+        []*widget.FormItem{
+            widget.NewFormItem("License Key", licenseEntry),
+        },
+        func(submit bool) {
+            if submit {
+                licenseKey := licenseEntry.Text
+                isValid = validateLicenseKey(licenseKey)
+                if !isValid {
+                    dialog.ShowError(fmt.Errorf("invalid license key"), win)
+                } else {
+                    saveLicenseKey(licenseKey)
+                }
+            } else {
+                // If canceled, exit the application
+                os.Exit(0)
+            }
+            done <- true
+        },
+        win,
+    )
+
+    formDialog.Show()
+
+    // Wait for the dialog to be handled
+    <-done
+
+    return isValid
+}
+
+func validateLicenseKey(licenseKey string) bool {
+	supabaseURL := os.Getenv("SUPABASE_URL")
+	supabaseKey := os.Getenv("SUPABASE_KEY")
+	supabaseClient := supa.CreateClient(supabaseURL, supabaseKey)
+	
+	var results []map[string]interface{}
+	err := supabaseClient.DB.From("licenses").Select("is_active").Eq("license_key", licenseKey).Execute(&results)
+	if err != nil {
+		panic(err)
+	}
+
+	if len(results) == 0 {
+		return false // License key not found
+	}
+
+	isActive := results["is_active"].(bool)
+	return isActive
+}
+
+func saveLicenseKey(licenseKey string) {
+	// Save the license key to a file or use a more secure method
+	err := os.WriteFile("license_key.txt", []byte(licenseKey), 0644)
+	if err != nil {
+		fmt.Println("Error saving license key:", err)
+	}
+}
