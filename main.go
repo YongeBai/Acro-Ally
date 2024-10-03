@@ -246,7 +246,6 @@ func validateLicenseKey(licenseKey string) bool {
 		Eq("license_key", licenseKey).
 		Execute(&results)
 	
-	fmt.Println("Results:", results)
 	if err != nil {
 		fmt.Println("Error checking license key:", err)
 		return false
