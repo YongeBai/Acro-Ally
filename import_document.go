@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/widget"
@@ -62,13 +64,39 @@ func importAcronyms(win fyne.Window, tree *widget.Tree, dict Dictionary) {
 			return
 		}
 		
-		// acronyms, err := extractAcronymsFromDocument(content)
-		// if err != nil {
-		// 	dialog.ShowError(err, win)
-		// 	return
-		// }
+		acronyms, err := extractAcronymsFromDocument(content)
+		if err != nil {
+			dialog.ShowError(err, win)
+			return
+		}
 		
+		addedAcronyms := make([]string, 0, len(acronyms))
+		for _, acronym := range acronyms {
+			fmt.Println(acronym)
+			if _, ok := dict[acronym.Acronym]; !ok {
+				dict[acronym.Acronym] = []Acronym{}
+			}
+			dict[acronym.Acronym] = append(dict[acronym.Acronym], Acronym{
+				Expanded: acronym.Expanded,
+				Definition: acronym.Definition,
+			})
+			addedAcronyms = append(addedAcronyms, fmt.Sprintf("**%s** - %s", acronym.Acronym, acronym.Expanded))
+		}
+		err = saveDictionary(dict, dictPath)
+		if err != nil {
+			dialog.ShowError(err, win)
+		}
+
 		tree.Refresh()
+
+		if len(addedAcronyms) > 0 {
+			content := widget.NewRichTextFromMarkdown(strings.Join(addedAcronyms, "\n"))
+			scroll := container.NewScroll(content)
+			scroll.SetMinSize(fyne.NewSize(300, 200))
+			dialog.ShowCustom("Added Acronyms", "OK", scroll, win)
+		} else {
+			dialog.ShowInformation("No New Acronyms", "No new acronyms were found in the document.", win)
+		}
 	}, win)
 
 	dialog.SetFilter(storage.NewExtensionFileFilter([]string{".pdf"}))
