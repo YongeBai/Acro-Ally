@@ -9,6 +9,7 @@ require (
 )
 
 require (
+	github.com/dslipak/pdf v0.0.2 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/ledongthuc/pdf v0.0.0-20240201131950-da5b75280b06 // indirect

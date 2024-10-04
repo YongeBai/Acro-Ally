@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -14,24 +13,33 @@ import (
 	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/widget"
 
-	"github.com/ledongthuc/pdf"
+	"github.com/dslipak/pdf"
 	openai "github.com/sashabaranov/go-openai"
 	"github.com/sashabaranov/go-openai/jsonschema"
+
 )
 
 func readPdf(path string) (string, error) {
-	f, r, err := pdf.Open(path)
-	defer f.Close()
-	if err != nil {
-		return "", err
-	}
-	var buf bytes.Buffer
-	b, err := r.GetPlainText()
-	if err != nil {
-		return "", err
-	}
-	buf.ReadFrom(b)
-	return buf.String(), nil
+    r, err := pdf.Open(path)    
+    if err != nil {
+        return "", err
+    }		
+
+    var texts string
+    totalPage := r.NumPage()
+    for pageIndex := 1; pageIndex <= totalPage; pageIndex++ {
+        p := r.Page(pageIndex)
+        if p.V.IsNull() {
+            continue
+        }
+
+		pageText := p.Content().Text
+		for _, text := range pageText {
+			texts += text.S
+		}
+    }
+
+    return texts, nil
 }
 
 func importAcronyms(win fyne.Window, tree *widget.Tree, dict Dictionary) {
@@ -45,13 +53,13 @@ func importAcronyms(win fyne.Window, tree *widget.Tree, dict Dictionary) {
 		}
 		defer reader.Close()
 		
-		tmpFile, err := os.CreateTemp("", "tmp.pdf")
+		tmpFile, err := os.CreateTemp("", "tmp-*.pdf")
 		if err != nil {
 			dialog.ShowError(err, win)
 			return
 		}
 		defer os.Remove(tmpFile.Name())
-
+		
 		_, err = io.Copy(tmpFile, reader)
 		if err != nil {
 			dialog.ShowError(err, win)
@@ -63,7 +71,8 @@ func importAcronyms(win fyne.Window, tree *widget.Tree, dict Dictionary) {
 			dialog.ShowError(err, win)
 			return
 		}
-		
+
+		fmt.Println(content)
 		acronyms, err := extractAcronymsFromDocument(content)
 		if err != nil {
 			dialog.ShowError(err, win)
@@ -120,21 +129,26 @@ func extractAcronymsFromDocument(content string) ([]AcronymResult, error) {
 	You are an acronym extractor. Extract acronyms, their expanded form, and a brief definition from the given text. 
 	Return the result as a JSON object with an 'acronyms' array containing objects with 'acronym', 'expanded', and 'definition' fields.
 	
+	You will be given a text document. Extract the acronyms from the document and return the result as a JSON object with an 'acronyms' array containing objects with 'acronym', 'expanded', and 'definition' fields.
+	
 	example: 
 		[
 			{
 				"acronym": "API", 
 				"expanded": "Application Programming Interface", 
 				"definition": "A set of routines, protocols, and tools for building software applications. API is a specification that defines how software components should interact with each other."
-		},
-		{
-			"acronym": "HTML",
-			"expanded": "Hypertext Markup Language",
-			"definition": "A standard markup language for documents designed to be displayed in a web browser. HTML describes the structure of a web page semantically and originally included cues for the appearance of the document."
-		}
+			},
+			{
+				"acronym": "HTML",
+				"expanded": "Hypertext Markup Language",
+				"definition": "A standard markup language for documents designed to be displayed in a web browser. HTML describes the structure of a web page semantically and originally included cues for the appearance of the document."
+			}
 	]
+	
+	Here is the text document:
+	
 	`
-
+	fmt.Println(content)
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	client := openai.NewClient(apiKey)
 	ctx := context.Background()
@@ -144,7 +158,7 @@ func extractAcronymsFromDocument(content string) ([]AcronymResult, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	fmt.Println("Sending request to OpenAI")
 	resp, err := client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
 		Model: openai.GPT4oMini,
 		Messages: []openai.ChatCompletionMessage{
