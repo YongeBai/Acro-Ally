@@ -117,7 +117,7 @@ type AcronymResponse struct {
 
 func extractAcronymsFromDocument(content string) ([]AcronymResult, error) {
 	prompt := `
-	You are an acronym extractor. Extract acronyms, their expanded forms, and definitions from the given text. 
+	You are an acronym extractor. Extract acronyms, their expanded form, and a brief definition from the given text. 
 	Return the result as a JSON object with an 'acronyms' array containing objects with 'acronym', 'expanded', and 'definition' fields.
 	
 	example: 
