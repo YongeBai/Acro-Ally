@@ -67,6 +67,9 @@ func main() {
 			widget.NewButton("Add Acronym", func() {
 				addAcronymButton(mainWindow, tree, dict)
 			}),
+			widget.NewButton("Import Acronyms from Document(.pdf)", func() {
+				importAcronyms(mainWindow, tree, dict)
+			}),
 		),
 		container.NewVBox(
 			widget.NewButton("Exit", func() {
@@ -155,7 +158,6 @@ func addAcronymSearch(win fyne.Window, tree *widget.Tree, dict Dictionary, acron
 				}
 				dict[acronym] = append(dict[acronym], newAcronym)
 				tree.Refresh()
-				// fmt.Printf("Dictionary after adding: %+v\n", dict)
 				err := saveDictionary(dict, dictPath)
 				if err != nil {
 					dialog.ShowError(err, win)
