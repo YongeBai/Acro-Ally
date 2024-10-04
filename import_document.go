@@ -72,7 +72,6 @@ func importAcronyms(win fyne.Window, tree *widget.Tree, dict Dictionary) {
 			return
 		}
 
-		fmt.Println(content)
 		acronyms, err := extractAcronymsFromDocument(content)
 		if err != nil {
 			dialog.ShowError(err, win)
@@ -81,7 +80,10 @@ func importAcronyms(win fyne.Window, tree *widget.Tree, dict Dictionary) {
 		
 		addedAcronyms := make([]string, 0, len(acronyms))
 		for _, acronym := range acronyms {
-			fmt.Println(acronym)
+			// Logging each acronym as it's processed
+			fmt.Printf("Processing acronym: %s\nExpanded: %s\nDefinition: %s\n\n", 
+				acronym.Acronym, acronym.Expanded, acronym.Definition)
+
 			if _, ok := dict[acronym.Acronym]; !ok {
 				dict[acronym.Acronym] = []Acronym{}
 			}
@@ -103,8 +105,10 @@ func importAcronyms(win fyne.Window, tree *widget.Tree, dict Dictionary) {
 			scroll := container.NewScroll(content)
 			scroll.SetMinSize(fyne.NewSize(300, 200))
 			dialog.ShowCustom("Added Acronyms", "OK", scroll, win)
+			fmt.Printf("Added %d new acronyms\n", len(addedAcronyms))
 		} else {
 			dialog.ShowInformation("No New Acronyms", "No new acronyms were found in the document.", win)
+			fmt.Println("No new acronyms found")
 		}
 	}, win)
 
@@ -128,27 +132,33 @@ func extractAcronymsFromDocument(content string) ([]AcronymResult, error) {
 	prompt := `
 	You are an acronym extractor. Extract acronyms, their expanded form, and a brief definition from the given text. 
 	Return the result as a JSON object with an 'acronyms' array containing objects with 'acronym', 'expanded', and 'definition' fields.
-	
-	You will be given a text document. Extract the acronyms from the document and return the result as a JSON object with an 'acronyms' array containing objects with 'acronym', 'expanded', and 'definition' fields.
-	
-	example: 
-		[
-			{
-				"acronym": "API", 
-				"expanded": "Application Programming Interface", 
-				"definition": "A set of routines, protocols, and tools for building software applications. API is a specification that defines how software components should interact with each other."
-			},
-			{
-				"acronym": "HTML",
-				"expanded": "Hypertext Markup Language",
-				"definition": "A standard markup language for documents designed to be displayed in a web browser. HTML describes the structure of a web page semantically and originally included cues for the appearance of the document."
-			}
+
+	The 'expanded' field should contain the full phrase that the acronym stands for.
+	The 'definition' field should contain a brief explanation or description of the concept.
+
+	Example:
+	[
+		{
+			"acronym": "API", 
+			"expanded": "Application Programming Interface", 
+			"definition": "A set of routines, protocols, and tools for building software applications. It specifies how software components should interact."
+		},
+		{
+			"acronym": "HTML",
+			"expanded": "Hypertext Markup Language",
+			"definition": "A standard markup language used for creating web pages and web applications."
+		},
+		{
+			"acronym": "CPU",
+			"expanded": "Central Processing Unit",
+			"definition": "The primary component of a computer that performs most of the processing inside a computer."
+		}
 	]
-	
-	Here is the text document:
-	
+
+	Here is the text document to extract acronyms from:
+
 	`
-	fmt.Println(content)
+	
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	client := openai.NewClient(apiKey)
 	ctx := context.Background()
@@ -188,6 +198,6 @@ func extractAcronymsFromDocument(content string) ([]AcronymResult, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(response)
+	
 	return response.Acronyms, nil
 }
