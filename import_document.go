@@ -90,7 +90,7 @@ func importAcronyms(win fyne.Window, tree *widget.Tree, dict Dictionary) {
 		tree.Refresh()
 
 		if len(addedAcronyms) > 0 {
-			content := widget.NewRichTextFromMarkdown(strings.Join(addedAcronyms, "\n"))
+			content := widget.NewRichTextFromMarkdown(strings.Join(addedAcronyms, "\n\n"))
 			scroll := container.NewScroll(content)
 			scroll.SetMinSize(fyne.NewSize(300, 200))
 			dialog.ShowCustom("Added Acronyms", "OK", scroll, win)
@@ -111,16 +111,36 @@ type AcronymResult struct {
 	Definition string `json:"definition"`
 }
 
+type AcronymResponse struct {
+	Acronyms []AcronymResult `json:"acronyms"`
+}
+
 func extractAcronymsFromDocument(content string) ([]AcronymResult, error) {
-	prompt := "You are an acronym extractor. Extract acronyms, their expanded forms, and definitions from the given text. " +
-		"Return the result as a JSON object with an 'acronyms' array containing objects with 'acronym', 'expanded', and 'definition' fields."
+	prompt := `
+	You are an acronym extractor. Extract acronyms, their expanded forms, and definitions from the given text. 
+	Return the result as a JSON object with an 'acronyms' array containing objects with 'acronym', 'expanded', and 'definition' fields.
+	
+	example: 
+		[
+			{
+				"acronym": "API", 
+				"expanded": "Application Programming Interface", 
+				"definition": "A set of routines, protocols, and tools for building software applications. API is a specification that defines how software components should interact with each other."
+		},
+		{
+			"acronym": "HTML",
+			"expanded": "Hypertext Markup Language",
+			"definition": "A standard markup language for documents designed to be displayed in a web browser. HTML describes the structure of a web page semantically and originally included cues for the appearance of the document."
+		}
+	]
+	`
 
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	client := openai.NewClient(apiKey)
 	ctx := context.Background()
 	
-	var results []AcronymResult
-	schema, err := jsonschema.GenerateSchemaForType(results)
+	var response AcronymResponse
+	schema, err := jsonschema.GenerateSchemaForType(response)
 	if err != nil {
 		return nil, err
 	}
@@ -149,10 +169,11 @@ func extractAcronymsFromDocument(content string) ([]AcronymResult, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = schema.Unmarshal(resp.Choices[0].Message.Content, &results)
+
+	err = schema.Unmarshal(resp.Choices[0].Message.Content, &response)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(results)
-	return results, nil
+	fmt.Println(response)
+	return response.Acronyms, nil
 }
