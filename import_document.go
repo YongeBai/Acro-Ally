@@ -72,50 +72,63 @@ func importAcronyms(win fyne.Window, tree *widget.Tree, dict Dictionary) {
 			return
 		}
 
-		acronyms, err := extractAcronymsFromDocument(content)
-		if err != nil {
-			dialog.ShowError(err, win)
-			return
-		}
-		
-		addedAcronyms := make([]string, 0, len(acronyms))
-		for _, acronym := range acronyms {
-			// Logging each acronym as it's processed
-			fmt.Printf("Processing acronym: %s\nExpanded: %s\nDefinition: %s\n\n", 
-				acronym.Acronym, acronym.Expanded, acronym.Definition)
+		loadingDialog := showLoadingDialog(win)
 
-			if _, ok := dict[acronym.Acronym]; !ok {
-				dict[acronym.Acronym] = []Acronym{}
+		go func() {
+			acronyms, err := extractAcronymsFromDocument(content)
+			loadingDialog.Hide()
+
+			if err != nil {
+				dialog.ShowError(err, win)
+				return
 			}
-			dict[acronym.Acronym] = append(dict[acronym.Acronym], Acronym{
-				Expanded: acronym.Expanded,
-				Definition: acronym.Definition,
-			})
-			addedAcronyms = append(addedAcronyms, fmt.Sprintf("**%s** - %s", acronym.Acronym, acronym.Expanded))
-		}
-		err = saveDictionary(dict, dictPath)
-		if err != nil {
-			dialog.ShowError(err, win)
-		}
+			
+			addedAcronyms := make([]string, 0, len(acronyms))
+			for _, acronym := range acronyms {
+				// Logging each acronym as it's processed
+				fmt.Printf("Processing acronym: %s\nExpanded: %s\nDefinition: %s\n\n", 
+					acronym.Acronym, acronym.Expanded, acronym.Definition)
 
-		tree.Refresh()
+				if _, ok := dict[acronym.Acronym]; !ok {
+					dict[acronym.Acronym] = []Acronym{}
+				}
+				dict[acronym.Acronym] = append(dict[acronym.Acronym], Acronym{
+					Expanded: acronym.Expanded,
+					Definition: acronym.Definition,
+				})
+				addedAcronyms = append(addedAcronyms, fmt.Sprintf("**%s** - %s", acronym.Acronym, acronym.Expanded))
+			}
+			err = saveDictionary(dict, dictPath)
+			if err != nil {
+				dialog.ShowError(err, win)
+			}
 
-		if len(addedAcronyms) > 0 {
-			content := widget.NewRichTextFromMarkdown(strings.Join(addedAcronyms, "\n\n"))
-			scroll := container.NewScroll(content)
-			scroll.SetMinSize(fyne.NewSize(300, 200))
-			dialog.ShowCustom("Added Acronyms", "OK", scroll, win)
-			fmt.Printf("Added %d new acronyms\n", len(addedAcronyms))
-		} else {
-			dialog.ShowInformation("No New Acronyms", "No new acronyms were found in the document.", win)
-			fmt.Println("No new acronyms found")
-		}
+			tree.Refresh()
+
+			if len(addedAcronyms) > 0 {
+				content := widget.NewRichTextFromMarkdown(strings.Join(addedAcronyms, "\n\n"))
+				scroll := container.NewScroll(content)
+				scroll.SetMinSize(fyne.NewSize(300, 200))
+				dialog.ShowCustom("Added Acronyms", "OK", scroll, win)
+				fmt.Printf("Added %d new acronyms\n", len(addedAcronyms))
+			} else {
+				dialog.ShowInformation("No New Acronyms", "No new acronyms were found in the document.", win)
+				fmt.Println("No new acronyms found")
+			}
+		}()
+		
 	}, win)
 
 	dialog.SetFilter(storage.NewExtensionFileFilter([]string{".pdf"}))
 	dialog.Show()
 }
 
+func showLoadingDialog(win fyne.Window) dialog.Dialog {
+	progress := widget.NewProgressBarInfinite()
+	loadingDialog := dialog.NewCustom("Processing", "Cancel", progress, win)
+	loadingDialog.Show()
+	return loadingDialog
+}
 
 
 type AcronymResult struct {
@@ -130,7 +143,13 @@ type AcronymResponse struct {
 
 func extractAcronymsFromDocument(content string) ([]AcronymResult, error) {
 	prompt := `
-	You are an acronym extractor. Extract acronyms, their expanded form, and a brief definition from the given text. 
+	You are an acronym extractor. Extract acronyms, their expanded form, and a brief definition from the given text. If there isn't enought context to create a sufficient definition, use the context to create a definition as if you were an expert in the subject matter.
+	
+	For example, if the context is a document about telecommunications, set 
+	acronym: '2G'
+	expanded: 'second-generation cellular network'
+	definition: 'The second generation of wireless technology that transitioned from analog to digital signals, enhancing voice quality, enabling SMS services, and allowing for more efficient use of the radio frequency spectrum.'
+
 	Return the result as a JSON object with an 'acronyms' array containing objects with 'acronym', 'expanded', and 'definition' fields.
 
 	The 'expanded' field should contain the full phrase that the acronym stands for.
