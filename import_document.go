@@ -179,6 +179,9 @@ func extractAcronymsFromDocument(content string) ([]AcronymResult, error) {
 	`
 	
 	apiKey := os.Getenv("OPENAI_API_KEY")
+	if apiKey == "" {
+		return nil, fmt.Errorf("OpenAI API key not set")
+	}
 	client := openai.NewClient(apiKey)
 	ctx := context.Background()
 	

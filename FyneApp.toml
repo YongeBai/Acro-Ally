@@ -1,6 +1,6 @@
 [Details]
-Icon = "Icon.png"
-Name = "Acro-Ally"
-ID = "com.yongebai.AcroAllyLanding"
-Version = "0.9.0"
-Build = 1
+  Icon = "Icon.png"
+  Name = "Acro-Ally"
+  ID = "com.yongebai.AcroAllyLanding"
+  Version = "0.9.0"
+  Build = 1

@@ -45,6 +45,12 @@ func main() {
 		// No license key file, prompt for a new one
 		checkLicenseKey(mainWindow)
 	}
+
+	apiKey := os.Getenv("OPENAI_API_KEY")
+	if apiKey == "" {
+		promptForOpenAIKey(mainWindow)
+	}
+
 	var err error
 	dict, err = loadDictionary(dictPath)
 	if err != nil {
@@ -190,4 +196,25 @@ func setupGlobalHotkeys(win fyne.Window, dict Dictionary) {
 
 	s := hook.Start()
 	<-hook.Process(s)
+}
+
+func promptForOpenAIKey(win fyne.Window) string {
+	var apiKey string
+    
+	entry := widget.NewPasswordEntry()
+	entry.SetPlaceHolder("Enter your OpenAI API key")
+
+	dialog.ShowForm("OpenAI API Key", "Save", "Cancel", []*widget.FormItem{
+		widget.NewFormItem("API Key", entry),
+	}, func(submitted bool) {
+		if submitted {
+			apiKey = entry.Text
+			os.Setenv("OPENAI_API_KEY", apiKey)
+		} else {
+			// If canceled, exit the application
+			os.Exit(0)
+		}
+	}, win)
+
+	return apiKey
 }
